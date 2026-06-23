@@ -1,9 +1,16 @@
 using MudBlazor.Services;
 using MusicStoreShowcase.Components;
+using MusicStoreShowcase.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMudServices();
+
+builder.Services.AddSingleton<LocaleService>(_ =>
+{
+    string localesPath = Path.Combine(builder.Environment.WebRootPath, "locales");
+    return new LocaleService(localesPath);
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -15,7 +22,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

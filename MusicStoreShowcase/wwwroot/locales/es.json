@@ -1,0 +1,25 @@
+{
+  "code": "es",
+  "displayName": "Español",
+  "bogusLocale": "es",
+  "adjectives": ["Secreto", "Perdido", "Eterno", "Luminoso", "Salvaje", "Oscuro", "Dulce", "Roto", "Infinito", "Azul", "Silencioso", "Nocturno"],
+  "nouns": ["Sueño", "Cielo", "Corazón", "Lluvia", "Silencio", "Sombra", "Fuego", "Noche", "Océano", "Memoria", "Luz", "Eco", "Camino", "Destino"],
+  "groupSuffixes": ["Banda", "Proyecto", "Club", "Colectivo", "Trío"],
+  "genres": ["Rock", "Pop", "Hip-Hop", "Jazz", "Electrónica", "House", "Folk", "Heavy Metal", "Rock'n'Roll", "Country"],
+  "albumSingleWord": "Sencillo",
+  "titlePatterns": [
+    "{noun}",
+    "{noun} {adj}",
+    "{noun} Del {noun}"
+  ],
+  "albumPatterns": [
+    "{noun}",
+    "{noun} {adj}"
+  ],
+  "artistPatterns": [
+    "fullName",
+    "{groupSuffix} {noun}",
+    "{adj}"
+  ],
+  "reviewTemplate": "Una de las mejores canciones de este año en el género {genre}."
+}

@@ -1,115 +1,90 @@
-﻿@page "/"
+@page "/"
 @rendermode InteractiveServer
+@using MusicStoreShowcase.Models
+@inject IJSRuntime JS
+@inject LocaleService Locales
+@implements IAsyncDisposable
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
 
-    @* 1. TOOLBAR (Элементы управления в одну строку по ТЗ) *@
+    @* 1. TOOLBAR *@
     <MudPaper Elevation="2" Class="pa-4 mb-4" Style="background-color: #f5f5f5;">
-        <MudGrid AlignItems="AlignItems.Center">
+        <MudGrid AlignItems="@Align.Center" Justify="@Justify.FlexStart">
 
-            @* Выбор языка через индекс (0 = en, 1 = es) *@
             <MudItem xs="12" sm="3">
-                <MudSelect T="int" Label="Language" Variant="Variant.Outlined" Margin="Margin.Dense" Value="SelectedLanguageIndex" ValueChanged="OnLanguageIndexChanged">
-                    <MudSelectItem T="int" Value="0">English (US)</MudSelectItem>
-                    <MudSelectItem T="int" Value="1">Español</MudSelectItem>
+                <MudSelect T="string" Label="Language" Variant="Variant.Outlined" Margin="Margin.Dense" Value="SelectedLocaleCode" ValueChanged="OnLanguageChanged">
+                    @foreach (var locale in AvailableLocales)
+                    {
+                        <MudSelectItem T="string" Value="@locale.Code">@locale.DisplayName</MudSelectItem>
+                    }
                 </MudSelect>
             </MudItem>
 
-            @* Поле ввода Сида с кнопкой-иконкой перемешивания *@
             <MudItem xs="12" sm="3">
                 <MudTextField T="ulong" Label="Seed" Variant="Variant.Outlined" Margin="Margin.Dense"
                               Value="CurrentSeed" ValueChanged="OnSeedChanged" Format="0"
                               Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Shuffle" OnAdornmentClick="GenerateRandomSeed" />
             </MudItem>
 
-            @* Ползунок средних лайков *@
             <MudItem xs="12" sm="4">
-                <div class="d-flex justify-between align-center mb-1">
+                <div class="d-flex justify-space-between align-center mb-1">
                     <MudText Typo="Typo.caption" Class="text-muted">Likes (avg):</MudText>
                     <MudText Typo="Typo.body2"><b>@AvgLikes.ToString("F1")</b></MudText>
                 </div>
                 <MudSlider T="double" Min="0.0" Max="10.0" Step="0.1" Value="AvgLikes" ValueChanged="OnLikesChanged" Color="Color.Primary" />
             </MudItem>
 
-            @* Переключатель режимов отображения с чистыми иконками по ТЗ *@
             <MudItem xs="12" sm="2" Class="d-flex justify-end">
                 <MudToggleGroup T="bool" Value="IsTableView" ValueChanged="OnViewModeChanged" Color="Color.Primary" CheckMark="false" Delimiters="true">
-
-                    @* Режим таблицы с пагинацией *@
-                    <MudToggleItem Value="true" Title="Table View (Pagination)">
-                        <MudIcon Icon="@Icons.Material.Filled.TableRows" />
-                    </MudToggleItem>
-
-                    @* Режим галереи с бесконечным скроллом *@
-                    <MudToggleItem Value="false" Title="Gallery View (Infinite Scroll)">
-                        <MudIcon Icon="@Icons.Material.Filled.GridView" />
-                    </MudToggleItem>
-
+                    <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.TableRows" /></MudToggleItem>
+                    <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.GridView" /></MudToggleItem>
                 </MudToggleGroup>
             </MudItem>
 
         </MudGrid>
     </MudPaper>
 
-    @* 2. DATA AREA (Область вывода треков) *@
+    @* 2. DATA AREA *@
     @if (IsTableView)
     {
-        @* --- РЕЖИМ ТАБЛИЦЫ С ПАГИНАЦИЕЙ --- *@
         <MudTable Items="@CurrentTracks" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="1" Dense="true" T="MusicTrack">
             <HeaderContent>
-                <MudTh Style="width: 50px;">#</MudTh>
-                <MudTh>Song</MudTh>
-                <MudTh>Artist</MudTh>
-                <MudTh>Album</MudTh>
-                <MudTh>Genre</MudTh>
-                <MudTh Style="width: 80px;">Likes</MudTh>
+                <MudTh>#</MudTh><MudTh>Song</MudTh><MudTh>Artist</MudTh><MudTh>Album</MudTh><MudTh>Genre</MudTh><MudTh>Likes</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="#">@context.Index</MudTd>
-                <MudTd DataLabel="Song">
-                    <div class="d-flex align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" Class="mr-2 text-muted" />
-                        <b>@context.Title</b>
-                    </div>
-                </MudTd>
+                <MudTd DataLabel="Song"><b>@context.Title</b></MudTd>
                 <MudTd DataLabel="Artist">@context.Artist</MudTd>
                 <MudTd DataLabel="Album">@context.Album</MudTd>
-                <MudTd DataLabel="Genre">
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">@context.Genre</MudChip>
-                </MudTd>
+                <MudTd DataLabel="Genre">@context.Genre</MudTd>
                 <MudTd DataLabel="Likes">
-                    <div class="d-flex align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Size="Size.Small" Color="Color.Primary" Class="mr-1" />
-                        @context.Likes
+                    <div class="d-flex align-center" style="gap: 4px;">
+                        <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Error" Size="Size.Small" />
+                        <span>@context.Likes</span>
                     </div>
                 </MudTd>
             </RowTemplate>
         </MudTable>
-
-        @* Пагинация внизу таблицы *@
         <div class="d-flex justify-center mt-4 mb-6">
-            <MudPagination Color="Color.Primary" Count="100" Selected="CurrentPage" SelectedChanged="OnPageChanged" />
+            <MudPagination Color="Color.Primary" Count="10" Selected="CurrentPage" SelectedChanged="OnPageChanged" />
         </div>
     }
     else
     {
-        @* --- РЕЖИМ ГАЛЕРЕИ С БЕСКОНЕЧНЫМ СКРОЛЛОМ --- *@
         <MudGrid>
             @foreach (var track in CurrentTracks)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudCard Elevation="2" Class="mb-3">
                         <MudCardContent>
-                            <div class="d-flex justify-between align-start mb-2">
-                                <MudText Typo="Typo.caption" Class="text-muted">#@track.Index</MudText>
-                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">@track.Genre</MudChip>
-                            </div>
-                            <MudText Typo="Typo.body1" Style="font-weight: bold;" LineLines="1">@track.Title</MudText>
-                            <MudText Typo="Typo.body2" Class="text-muted mb-2" LineLines="1">@track.Artist</MudText>
-                            <MudText Typo="Typo.caption" Style="display:block;" Class="mb-2">Album: <i>@track.Album</i></MudText>
-                            <div class="d-flex align-center">
-                                <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Size="Size.Small" Color="Color.Primary" Class="mr-1" />
-                                <MudText Typo="Typo.body2">@track.Likes</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">#@track.Index</MudText>
+                            <MudText Typo="Typo.h6">@track.Title</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2">@track.Artist</MudText>
+                            <MudText Typo="Typo.caption">Album: @track.Album</MudText>
+                            <MudText Typo="Typo.caption" Class="mb-2">Genre: @track.Genre</MudText>
+                            <div class="d-flex align-center" style="gap: 4px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Error" Size="Size.Small" />
+                                <span>@track.Likes</span>
                             </div>
                         </MudCardContent>
                     </MudCard>
@@ -117,84 +92,146 @@
             }
         </MudGrid>
 
-        @* Индикатор загрузки для бесконечного скролла *@
-        <div class="d-flex justify-center my-4">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+        <div id="scroll-trigger" style="height: 20px;"></div>
+        <div class="d-flex justify-center my-6">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
         </div>
     }
-
-    @* Нижняя Debug панель состояния системы (Добавили вывод строки языка для контроля) *@
-    <MudPaper Elevation="1" Class="pa-3 text-center mb-4" Style="background-color: #e8f5e9;">
-        <MudText Typo="Typo.body2" Color="Color.Success">
-            <b>System state:</b> LangIndex = @SelectedLanguageIndex | Locale String = "@SelectedLanguage" | Seed = @CurrentSeed | Likes = @AvgLikes.ToString("F1") | Mode = @(IsTableView ? "Table" : "Gallery") | Page = @CurrentPage
-        </MudText>
-    </MudPaper>
 
 </MudContainer>
 
 @code {
-    private int SelectedLanguageIndex { get; set; } = 0;
+    // Список локалей подгружается из LocaleService один раз при инициализации
+    // компонента (а не хардкодится в разметке выше).
+    private IReadOnlyList<LocaleDefinition> AvailableLocales { get; set; } = new List<LocaleDefinition>();
 
-    // Вычисляемое свойство возвращает чистую строку "en" или "es"
-    private string SelectedLanguage => SelectedLanguageIndex == 1 ? "es" : "en";
+    // Текущий выбранный язык хранится как код ("en", "es", ...), а не как
+    // числовой индекс — так список языков может расти без изменения
+    // структуры состояния.
+    private string SelectedLocaleCode { get; set; } = string.Empty;
+    private LocaleDefinition CurrentLocale => Locales.GetByCode(SelectedLocaleCode);
 
     private ulong CurrentSeed { get; set; } = 123456789;
     private double AvgLikes { get; set; } = 5.0;
     private bool IsTableView { get; set; } = true;
     private int CurrentPage { get; set; } = 1;
-
+    private bool _isLoading = false;
     private List<MusicTrack> CurrentTracks { get; set; } = new();
+
+    // Сколько "страниц" (батчей по 10) галереи уже подгружено.
+    // Это и есть состояние, которое нужно сохранять при перегенерации,
+    // чтобы избежать "мигания" (сброс на 10 -> повторная автодогрузка).
+    private int GalleryPagesLoaded { get; set; } = 1;
+
+    private DotNetObjectReference<Home>? _dotNetRef;
+    private bool _scrollListenerActive = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!IsTableView && !_scrollListenerActive)
+        {
+            _dotNetRef ??= DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("initScrollListener", _dotNetRef);
+            _scrollListenerActive = true;
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreTracks()
+    {
+        // Лимита по количеству треков больше нет (по ТЗ — без жёсткого
+        // ограничения), поэтому здесь остаётся только защита от
+        // параллельных вызовов одного и того же запроса на подгрузку.
+        if (IsTableView || _isLoading) return;
+
+        _isLoading = true;
+        await Task.Delay(150);
+
+        GalleryPagesLoaded++;
+        var nextBatch = TrackGenerator.GenerateBatch(CurrentSeed, CurrentLocale, AvgLikes, GalleryPagesLoaded, 10);
+
+        if (nextBatch != null && nextBatch.Any())
+        {
+            CurrentTracks.AddRange(nextBatch);
+            StateHasChanged();
+        }
+
+        _isLoading = false;
+    }
 
     protected override void OnInitialized()
     {
+        AvailableLocales = Locales.GetAll();
+        SelectedLocaleCode = Locales.DefaultCode;
         UpdateData();
     }
 
+    // Перегенерирует данные для ТЕКУЩЕГО режима отображения.
+    // Table View: одна страница из CurrentPage (10 треков).
+    // Gallery View: все треки с 1 по GalleryPagesLoaded батчей сразу,
+    // одним вызовом — это и убирает "мигание", потому что не происходит
+    // промежуточного рендера на 10 треках с последующей автодогрузкой.
     private void UpdateData()
     {
-        // Передаем строку локали ("en"/"es") напрямую в генератор
-        CurrentTracks = TrackGenerator.GenerateBatch(CurrentSeed, SelectedLanguage, AvgLikes, CurrentPage, pageSize: 10);
-
-        // Форсируем перерисовку UI в InteractiveServer режиме
+        if (IsTableView)
+        {
+            CurrentTracks = TrackGenerator.GenerateBatch(CurrentSeed, CurrentLocale, AvgLikes, CurrentPage, pageSize: 10);
+        }
+        else
+        {
+            CurrentTracks = TrackGenerator.GenerateBatch(CurrentSeed, CurrentLocale, AvgLikes, pageNumber: 1, pageSize: GalleryPagesLoaded * 10);
+        }
         StateHasChanged();
     }
 
-    private void ResetNavigation()
+    // Сброс при смене seed/языка: Table View -> страница 1,
+    // Gallery View -> обратно к одной "странице" (10 треков) и скролл наверх.
+    private async void ResetNavigation()
     {
         CurrentPage = 1;
+        GalleryPagesLoaded = 1;
         UpdateData();
+
+        if (!IsTableView)
+        {
+            await JS.InvokeVoidAsync("scrollGalleryToTop");
+        }
     }
 
-    private void OnLanguageIndexChanged(int newIndex)
-    {
-        SelectedLanguageIndex = newIndex;
-        ResetNavigation();
-    }
+    private void OnLanguageChanged(string newCode) { SelectedLocaleCode = newCode; ResetNavigation(); }
+    private void OnSeedChanged(ulong newSeed) { CurrentSeed = newSeed; ResetNavigation(); }
 
-    private void OnSeedChanged(ulong newSeed)
-    {
-        CurrentSeed = newSeed;
-        ResetNavigation();
-    }
+    // Лайки — особый случай: по ТЗ изменение лайков НЕ должно сбрасывать
+    // позицию скролла или страницу пагинации, и не должно менять
+    // title/artist/album/genre. Поэтому здесь не вызываем ResetNavigation(),
+    // а просто перегенерируем те же по объёму данные (текущая страница
+    // таблицы или все уже подгруженные страницы галереи) с новым AvgLikes.
+    private void OnLikesChanged(double newLikes) { AvgLikes = newLikes; UpdateData(); }
 
-    private void OnLikesChanged(double newLikes)
-    {
-        AvgLikes = newLikes;
-        UpdateData();
-    }
-
-    private void OnViewModeChanged(bool isTable)
+    private async void OnViewModeChanged(bool isTable)
     {
         IsTableView = isTable;
-        ResetNavigation();
+
+        if (isTable)
+        {
+            if (_scrollListenerActive)
+            {
+                await JS.InvokeVoidAsync("disposeScrollListener");
+                _scrollListenerActive = false;
+            }
+            UpdateData();
+        }
+        else
+        {
+            // При переключении в галерею начинаем с одной "страницы",
+            // чтобы не задавать сразу слишком много элементов на старте.
+            GalleryPagesLoaded = 1;
+            _scrollListenerActive = false;
+            UpdateData();
+        }
     }
 
-    private void OnPageChanged(int page)
-    {
-        CurrentPage = page;
-        UpdateData();
-    }
-
+    private void OnPageChanged(int page) { CurrentPage = page; UpdateData(); }
     private void GenerateRandomSeed()
     {
         Random rand = new Random();
@@ -202,5 +239,15 @@
         rand.NextBytes(buffer);
         CurrentSeed = BitConverter.ToUInt64(buffer, 0);
         ResetNavigation();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_scrollListenerActive)
+        {
+            try { await JS.InvokeVoidAsync("disposeScrollListener"); }
+            catch { /* circuit may already be gone */ }
+        }
+        _dotNetRef?.Dispose();
     }
 }

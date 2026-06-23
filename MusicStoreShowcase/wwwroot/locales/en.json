@@ -1,0 +1,26 @@
+{
+  "code": "en",
+  "displayName": "English (US)",
+  "bogusLocale": "en",
+  "adjectives": ["Midnight", "Golden", "Secret", "Lost", "Silent", "Electric", "Wild", "Dark", "Sweet", "Broken", "Infinite", "Velvet", "Neon", "Liquid", "Chasing"],
+  "nouns": ["Dream", "Sky", "Heart", "Rain", "Silence", "Shadow", "Fire", "Night", "Ocean", "Memory", "Light", "Echo", "Storm", "Miracle", "Highway"],
+  "groupSuffixes": ["Project", "Band", "Club", "Collective", "Chronicles"],
+  "genres": ["Rock", "Pop", "Hip-Hop", "Jazz", "Electronic", "House", "Folk", "Heavy Metal", "Rock'n'Roll", "Country"],
+  "albumSingleWord": "Single",
+  "titlePatterns": [
+    "{noun}",
+    "{adj} {noun}",
+    "{adj} {adj} {noun}",
+    "Chasing {noun}"
+  ],
+  "albumPatterns": [
+    "{noun}",
+    "{adj} {noun}"
+  ],
+  "artistPatterns": [
+    "fullName",
+    "{noun} {groupSuffix}",
+    "{adj}"
+  ],
+  "reviewTemplate": "One of the best tracks of this year in the {genre} genre."
+}
