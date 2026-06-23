@@ -7,13 +7,11 @@
     <MudPaper Elevation="2" Class="pa-4 mb-4" Style="background-color: #f5f5f5;">
         <MudGrid AlignItems="AlignItems.Center">
 
-            @* Выбор языка через массив из C#-кода — теперь никаких ошибок контекста! *@
+            @* Выбор языка через индекс (0 = en, 1 = es) *@
             <MudItem xs="12" sm="3">
-                <MudSelect T="string" Label="Language" Variant="Variant.Outlined" Margin="Margin.Dense" Value="SelectedLanguage" ValueChanged="OnLanguageChanged">
-                    @foreach (var lang in SupportedLanguages)
-                    {
-                        <MudSelectItem T="string" Value="@lang">@(lang == "en" ? "English" : "Русский")</MudSelectItem>
-                    }
+                <MudSelect T="int" Label="Language" Variant="Variant.Outlined" Margin="Margin.Dense" Value="SelectedLanguageIndex" ValueChanged="OnLanguageIndexChanged">
+                    <MudSelectItem T="int" Value="0">English (US)</MudSelectItem>
+                    <MudSelectItem T="int" Value="1">Español</MudSelectItem>
                 </MudSelect>
             </MudItem>
 
@@ -33,11 +31,20 @@
                 <MudSlider T="double" Min="0.0" Max="10.0" Step="0.1" Value="AvgLikes" ValueChanged="OnLikesChanged" Color="Color.Primary" />
             </MudItem>
 
-            @* Переключатель режимов отображения (Иконки Таблица / Плитка справа по ТЗ) *@
+            @* Переключатель режимов отображения с чистыми иконками по ТЗ *@
             <MudItem xs="12" sm="2" Class="d-flex justify-end">
-                <MudToggleGroup T="bool" Value="IsTableView" ValueChanged="OnViewModeChanged" Color="Color.Primary" CheckMark="false">
-                    <MudToggleItem Value="true" UnselectedIcon="@Icons.Material.Filled.TableRows" SelectedIcon="@Icons.Material.Filled.TableRows" Title="Table View" />
-                    <MudToggleItem Value="false" UnselectedIcon="@Icons.Material.Filled.GridView" SelectedIcon="@Icons.Material.Filled.GridView" Title="Gallery View" />
+                <MudToggleGroup T="bool" Value="IsTableView" ValueChanged="OnViewModeChanged" Color="Color.Primary" CheckMark="false" Delimiters="true">
+
+                    @* Режим таблицы с пагинацией *@
+                    <MudToggleItem Value="true" Title="Table View (Pagination)">
+                        <MudIcon Icon="@Icons.Material.Filled.TableRows" />
+                    </MudToggleItem>
+
+                    @* Режим галереи с бесконечным скроллом *@
+                    <MudToggleItem Value="false" Title="Gallery View (Infinite Scroll)">
+                        <MudIcon Icon="@Icons.Material.Filled.GridView" />
+                    </MudToggleItem>
+
                 </MudToggleGroup>
             </MudItem>
 
@@ -116,38 +123,40 @@
         </div>
     }
 
-    @* Нижняя Debug панель состояния системы *@
+    @* Нижняя Debug панель состояния системы (Добавили вывод строки языка для контроля) *@
     <MudPaper Elevation="1" Class="pa-3 text-center mb-4" Style="background-color: #e8f5e9;">
         <MudText Typo="Typo.body2" Color="Color.Success">
-            <b>System state:</b> Lang = @SelectedLanguage | Seed = @CurrentSeed | Likes = @AvgLikes.ToString("F1") | Mode = @(IsTableView ? "Table" : "Gallery") | Page = @CurrentPage
+            <b>System state:</b> LangIndex = @SelectedLanguageIndex | Locale String = "@SelectedLanguage" | Seed = @CurrentSeed | Likes = @AvgLikes.ToString("F1") | Mode = @(IsTableView ? "Table" : "Gallery") | Page = @CurrentPage
         </MudText>
     </MudPaper>
 
 </MudContainer>
 
 @code {
-    // Список поддерживаемых языков в виде безопасного C#-массива
-    private List<string> SupportedLanguages { get; set; } = new() { "en", "ru" };
+    private int SelectedLanguageIndex { get; set; } = 0;
 
-    private string SelectedLanguage { get; set; } = "en";
+    // Вычисляемое свойство возвращает чистую строку "en" или "es"
+    private string SelectedLanguage => SelectedLanguageIndex == 1 ? "es" : "en";
+
     private ulong CurrentSeed { get; set; } = 123456789;
     private double AvgLikes { get; set; } = 5.0;
     private bool IsTableView { get; set; } = true;
     private int CurrentPage { get; set; } = 1;
 
-    // Список треков для текущего экрана
     private List<MusicTrack> CurrentTracks { get; set; } = new();
 
-    // Инициализация компонента
     protected override void OnInitialized()
     {
         UpdateData();
     }
 
-    // Вызов нашего генератора Bogus
     private void UpdateData()
     {
+        // Передаем строку локали ("en"/"es") напрямую в генератор
         CurrentTracks = TrackGenerator.GenerateBatch(CurrentSeed, SelectedLanguage, AvgLikes, CurrentPage, pageSize: 10);
+
+        // Форсируем перерисовку UI в InteractiveServer режиме
+        StateHasChanged();
     }
 
     private void ResetNavigation()
@@ -156,9 +165,9 @@
         UpdateData();
     }
 
-    private void OnLanguageChanged(string newLang)
+    private void OnLanguageIndexChanged(int newIndex)
     {
-        SelectedLanguage = newLang;
+        SelectedLanguageIndex = newIndex;
         ResetNavigation();
     }
 
