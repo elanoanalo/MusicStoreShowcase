@@ -2,25 +2,90 @@
   "code": "en",
   "displayName": "English (US)",
   "bogusLocale": "en",
-  "adjectives": ["Midnight", "Golden", "Secret", "Lost", "Silent", "Electric", "Wild", "Dark", "Sweet", "Broken", "Infinite", "Velvet", "Neon", "Liquid", "Chasing"],
-  "nouns": ["Dream", "Sky", "Heart", "Rain", "Silence", "Shadow", "Fire", "Night", "Ocean", "Memory", "Light", "Echo", "Storm", "Miracle", "Highway"],
-  "groupSuffixes": ["Project", "Band", "Club", "Collective", "Chronicles"],
-  "genres": ["Rock", "Pop", "Hip-Hop", "Jazz", "Electronic", "House", "Folk", "Heavy Metal", "Rock'n'Roll", "Country"],
+  "adjectives": [ "Midnight", "Golden", "Secret", "Lost", "Silent", "Electric", "Wild", "Dark", "Sweet", "Broken", "Infinite", "Velvet", "Neon", "Liquid", "Chasing", "Urban", "Vintage", "Haunted", "Cosmic" ],
+  "nouns": [ "Dream", "Sky", "Heart", "Rain", "Silence", "Shadow", "Fire", "Night", "Ocean", "Memory", "Light", "Echo", "Storm", "Miracle", "Highway", "Horizon", "Whisper", "Empire" ],
+  "groupSuffixes": [ "Project", "Band", "Club", "Collective", "Chronicles", "Symphony", "Theory" ],
+  "genres": [ "Rock", "Pop", "Hip-Hop", "Jazz", "Electronic", "House", "Folk", "Heavy Metal", "Rock'n'Roll", "Country", "Indie", "Synthwave" ],
   "albumSingleWord": "Single",
   "titlePatterns": [
     "{noun}",
     "{adj} {noun}",
     "{adj} {adj} {noun}",
-    "Chasing {noun}"
+    "Chasing {noun}",
+    "Through the {noun}"
   ],
   "albumPatterns": [
     "{noun}",
-    "{adj} {noun}"
+    "{adj} {noun}",
+    "Tales of the {adj} {noun}"
   ],
   "artistPatterns": [
     "fullName",
     "{noun} {groupSuffix}",
-    "{adj}"
+    "The {adj} {noun}s",
+    "{adj} {groupSuffix}"
   ],
-  "reviewTemplate": "One of the best tracks of this year in the {genre} genre."
+  "reviewTemplate": "One of the best tracks of this year in the {genre} genre.",
+  "reviews": {
+    "openings": [
+      "This track is",
+      "Absolutely",
+      "Honestly,",
+      "Wow,",
+      "A masterpiece.",
+      "From the very first second,",
+      "I didn't expect this to be",
+      "If you truly appreciate music, this"
+    ],
+    "adjectives": [
+      "mind-blowing",
+      "pure nostalgia",
+      "incredibly catchy",
+      "dark and atmospheric",
+      "energetic",
+      "sublime",
+      "groundbreaking",
+      "mesmerizing",
+      "deeply emotional",
+      "magical"
+    ],
+    "connectors": [
+      "with great production quality.",
+      "and the melody is unreal.",
+      "perfect for a night drive.",
+      "it completely changed my mood.",
+      "the beat dynamic is just flawless.",
+      "it has a vibe that hooks you instantly."
+    ],
+    "conclusions": [
+      "10/10!",
+      "Highly recommended.",
+      "Can't stop looping this.",
+      "Added to my favorites immediately.",
+      "This is going to be a massive hit.",
+      "Give it a listen, it is totally worth it."
+    ]
+  },
+  "lyrics": [
+    "Lost in the neon lights, chasing a ghost",
+    "Running through the shadows of what we loved most",
+    "The bassline drops and the world fades away",
+    "We are the rulers of the night until the day",
+    "Echoes of your voice inside a digital dream",
+    "Nothing in this city is quite what it seems",
+    "Hold on tight, the rhythm is taking control",
+    "A synthetic melody rewriting my soul",
+    "Walking all alone under the cold morning rain",
+    "Eyes locked together but we don't know the pain",
+    "Screaming to the void in a world full of noise",
+    "Searching for a sign, making all the wrong choice",
+    "Fire in our blood, ashes left in our hands",
+    "Dancing on the edge of these sinking sands",
+    "Staring at the stars from the twenty-third floor",
+    "If time is just money, I am craving for more",
+    "A guitar is weeping in a dead-end street bar",
+    "Trying to find out who we actually are",
+    "The clock keeps on ticking but everything stands",
+    "One last lonely verse written by these cold hands"
+  ]
 }

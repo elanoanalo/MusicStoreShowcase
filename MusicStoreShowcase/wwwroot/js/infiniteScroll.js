@@ -1,12 +1,7 @@
-// wwwroot/js/infiniteScroll.js
-// Uses IntersectionObserver to detect when the bottom "scroll-trigger" div
-// becomes visible, then calls back into the Blazor component to load more data.
-
 window._infiniteScrollObservers = window._infiniteScrollObservers || {};
 
 window.initScrollListener = function (dotNetHelper) {
-    // Always clean up any previous observer first (important because
-    // OnAfterRenderAsync can fire again, e.g. after view-mode toggles).
+
     window.disposeScrollListener();
 
     const target = document.getElementById('scroll-trigger');
@@ -22,8 +17,8 @@ window.initScrollListener = function (dotNetHelper) {
             }
         });
     }, {
-        root: null,        // viewport
-        rootMargin: '200px', // start loading a bit before it's fully in view
+        root: null,        
+        rootMargin: '200px', 
         threshold: 0
     });
 
@@ -40,10 +35,6 @@ window.disposeScrollListener = function () {
     }
 };
 
-// Called from C# whenever generation parameters change (seed/language),
-// so the Gallery View visually returns to its starting scroll position,
-// matching the "Reset the Gallery View to the initial scroll position"
-// requirement.
 window.scrollGalleryToTop = function () {
     window.scrollTo({ top: 0, behavior: 'instant' });
 };

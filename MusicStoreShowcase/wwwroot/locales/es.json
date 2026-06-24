@@ -2,24 +2,90 @@
   "code": "es",
   "displayName": "Español",
   "bogusLocale": "es",
-  "adjectives": ["Secreto", "Perdido", "Eterno", "Luminoso", "Salvaje", "Oscuro", "Dulce", "Roto", "Infinito", "Azul", "Silencioso", "Nocturno"],
-  "nouns": ["Sueño", "Cielo", "Corazón", "Lluvia", "Silencio", "Sombra", "Fuego", "Noche", "Océano", "Memoria", "Luz", "Eco", "Camino", "Destino"],
-  "groupSuffixes": ["Banda", "Proyecto", "Club", "Colectivo", "Trío"],
-  "genres": ["Rock", "Pop", "Hip-Hop", "Jazz", "Electrónica", "House", "Folk", "Heavy Metal", "Rock'n'Roll", "Country"],
+  "adjectives": [ "Secreto", "Perdido", "Eterno", "Luminoso", "Salvaje", "Oscuro", "Dulce", "Roto", "Infinito", "Azul", "Silencioso", "Nocturno", "Urbano", "Sintético", "Invisible", "Olvidado", "Fugaz", "Cósmico" ],
+  "nouns": [ "Sueño", "Cielo", "Corazón", "Lluvia", "Silencio", "Sombra", "Fuego", "Noche", "Océano", "Memoria", "Luz", "Eco", "Camino", "Destino", "Viento", "Laberinto", "Latido", "Universo" ],
+  "groupSuffixes": [ "Banda", "Proyecto", "Club", "Colectivo", "Trío", "Sindicato", "Orquesta" ],
+  "genres": [ "Rock", "Pop", "Hip-Hop", "Jazz", "Electrónica", "House", "Folk", "Heavy Metal", "Rock'n'Roll", "Country", "Indie", "Synthwave" ],
   "albumSingleWord": "Sencillo",
   "titlePatterns": [
     "{noun}",
     "{noun} {adj}",
-    "{noun} Del {noun}"
+    "{noun} Del {noun}",
+    "Buscando El {noun}",
+    "Entre {noun} y {noun}"
   ],
   "albumPatterns": [
     "{noun}",
-    "{noun} {adj}"
+    "{noun} {adj}",
+    "Crónicas De Un {noun}"
   ],
   "artistPatterns": [
     "fullName",
     "{groupSuffix} {noun}",
-    "{adj}"
+    "{adj} {noun}",
+    "Los {noun}s {adj}es"
   ],
-  "reviewTemplate": "Una de las mejores canciones de este año en el género {genre}."
+  "reviewTemplate": "Una de las mejores canciones de este año en el género {genre}.",
+  "reviews": {
+    "openings": [
+      "Esta pista es",
+      "Absolutamente",
+      "Honestamente,",
+      "¡Guau,",
+      "Una obra maestra.",
+      "Desde el primer segundo,",
+      "No me esperaba que fuera",
+      "Si te gusta la música de verdad, esto"
+    ],
+    "adjectives": [
+      "asombrosa",
+      "pura nostalgia",
+      "increíblemente pegadiza",
+      "oscura y atmosférica",
+      "enérgica",
+      "sublime",
+      "revolucionaria",
+      "hipnotizante",
+      "llena de emoción",
+      "mágica"
+    ],
+    "connectors": [
+      "con una gran calidad de producción.",
+      "y la melodía es irreal.",
+      "perfecta para un viaje nocturno.",
+      "cambió completamente mi estado de ánimo.",
+      "las transiciones de ritmo son impecables.",
+      "tiene una vibra que te atrapa."
+    ],
+    "conclusions": [
+      "¡10/10!",
+      "Muy recomendada.",
+      "No puedo dejar de escucharla.",
+      "Añadida a mis favoritas inmediatamente.",
+      "Va a ser un éxito total.",
+      "Dale una oportunidad, vale la pena."
+    ]
+  },
+  "lyrics": [
+    "Perdido en las luces de neón, persiguiendo un fantasma",
+    "Corriendo por las sombras de lo que más amamos",
+    "El bajo cae y el mundo se desvanece",
+    "Somos los dueños de la noche hasta que llegue el día",
+    "Ecos de tu voz dentro de un sueño digital",
+    "Nada en esta ciudad es lo que parece",
+    "Agárrate fuerte, el ritmo está tomando el control",
+    "Una melodía sintética reescribiendo mi alma",
+    "Caminando solo bajo la lluvia fría de la madrugada",
+    "Las miradas se cruzan pero nadie dice nada",
+    "Gritando al vacío en un mundo lleno de ruido",
+    "Buscando una señal, un latido que se ha perdido",
+    "Fuego en la sangre, cenizas en las manos",
+    "Bailando sobre el borde de lo que antes destrozamos",
+    "Mirando las estrellas desde el piso veintitrés",
+    "Si el tiempo es dinero, lo gasté todo otra vez",
+    "Una guitarra llora en un bar sin salida",
+    "Buscando las respuestas secretas de la vida",
+    "El reloj sigue corriendo pero aquí todo se paró",
+    "Un último verso para el amor que nunca comenzó"
+  ]
 }

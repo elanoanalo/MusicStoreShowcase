@@ -33,9 +33,9 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapGet("/cover/{seed}/{index}", (ulong seed, int index, string title, string artist) =>
+app.MapGet("/cover/{seed}/{index}", (ulong seed, int index, string title, string artist, string lang) =>
 {
-    byte[] png = MusicStoreShowcase.Models.CoverGenerator.GenerateCoverPng(seed, index, title ?? "", artist ?? "");
+    byte[] png = MusicStoreShowcase.Models.CoverGenerator.GenerateCoverPng(seed, index, title ?? "", artist ?? "", lang ?? "");
     return Results.File(png, "image/png");
 });
 

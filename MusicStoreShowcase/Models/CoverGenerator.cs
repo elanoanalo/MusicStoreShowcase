@@ -1,11 +1,10 @@
 ﻿using SkiaSharp;
-using System;
 
 namespace MusicStoreShowcase.Models
 {
     public static class CoverGenerator
     {
-        private const int Size = 400; // обложка 400x400 пикселей
+        private const int Size = 400;
         private enum BackgroundStyle
         {
             RadialBurst,
@@ -15,11 +14,13 @@ namespace MusicStoreShowcase.Models
 
 
 
-        public static byte[] GenerateCoverPng(ulong userSeed, int trackIndex, string title, string artist)
+        public static byte[] GenerateCoverPng(ulong userSeed, int trackIndex, string title, string artist, string lang)
         {
             unchecked
             {
-                ulong combined = userSeed * 6364136223846793005UL + (ulong)trackIndex + 0x9E3779B9UL;
+
+                ulong langSalt = (ulong)(lang ?? "").GetHashCode();
+                ulong combined = userSeed * 6364136223846793005UL + (ulong)trackIndex + 0x9E3779B9UL + langSalt;
                 int coverSeed = (int)(combined & 0x7FFFFFFF);
                 var rand = new Random(coverSeed);
 
@@ -52,8 +53,8 @@ namespace MusicStoreShowcase.Models
         private static Palette GeneratePalette(Random rand)
         {
             float hue = rand.Next(0, 360);
-            float saturation = 55f + (float)rand.NextDouble() * 35f; // 55–90%
-            float lightness = 35f + (float)rand.NextDouble() * 20f;  // 35–55%
+            float saturation = 55f + (float)rand.NextDouble() * 35f;
+            float lightness = 35f + (float)rand.NextDouble() * 20f; 
 
             var baseColor = SKColor.FromHsl(hue, saturation, lightness);
 
@@ -67,9 +68,9 @@ namespace MusicStoreShowcase.Models
 
         private static void DrawRadialBurst(SKCanvas canvas, Palette palette, Random rand)
         {
-            float cx = Size / 2f, cy = Size / 2f; // центр обложки
-            int rayCount = rand.Next(10, 18);      // сколько лучей
-            float maxRadius = Size * 0.8f;          // длина лучей
+            float cx = Size / 2f, cy = Size / 2f;
+            int rayCount = rand.Next(10, 18);   
+            float maxRadius = Size * 0.8f;      
 
             using var paint = new SKPaint { IsAntialias = true };
 

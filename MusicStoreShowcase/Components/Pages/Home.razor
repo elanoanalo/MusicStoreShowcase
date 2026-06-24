@@ -7,7 +7,6 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
 
-    @* 1. TOOLBAR *@
     <MudPaper Elevation="2" Class="pa-4 mb-4" Style="background-color: #f5f5f5;">
         <MudGrid AlignItems="@Align.Center" Justify="@Justify.FlexStart">
 
@@ -44,7 +43,6 @@
         </MudGrid>
     </MudPaper>
 
-    @* 2. DATA AREA *@
     @if (IsTableView)
     {
         <MudTable Items="@CurrentTracks" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="1" Dense="true" T="MusicTrack"
@@ -84,7 +82,31 @@
                                     <MudText Typo="Typo.body2">Album: @context.Album</MudText>
                                     <MudText Typo="Typo.body2">Genre: @context.Genre</MudText>
                                     <MudText Typo="Typo.body2">Duration: @context.Duration</MudText>
-                                    <MudText Typo="Typo.body2" Class="mt-2">@context.Review</MudText>
+                                    
+                                    <div class="mt-2 mb-2">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary"><b>Lyrics:</b></MudText>
+                                        <div class="pa-2 mb-2" style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; font-family: monospace; font-size: 0.85rem;">
+                                            @if (CurrentLocale != null)
+                                            {
+                                                @foreach (var line in SongTextGenerator.GenerateLyrics(CurrentSeed, context.Index, CurrentLocale))
+                                                {
+                                                    <div>🎤 @line</div>
+                                                }
+                                            }
+                                        </div>
+
+                                        <MudText Typo="Typo.caption" Color="Color.Primary"><b>Reviews:</b></MudText>
+                                        @if (CurrentLocale != null)
+                                        {
+                                            @foreach (var review in SongTextGenerator.GenerateReviews(CurrentSeed, context.Index, CurrentLocale, 3))
+                                            {
+                                                <div class="pa-1 mb-1" style="background: #f5f5f5; border-left: 3px solid #594ae2; border-radius: 4px; font-style: italic; font-size: 0.8rem;">
+                                                    "@review"
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+
                                     <div class="mt-3">
                                         <midi-player src="@GetMusicUrl(context)"
                                                      sound-font
@@ -106,7 +128,7 @@
 
             @for (int p = WindowStart; p < WindowStart + WindowSize; p++)
             {
-                int pageNum = p; // локальная копия для замыкания
+                int pageNum = p;
                 <MudButton Variant="@(pageNum == CurrentPage ? Variant.Filled : Variant.Text)"
                            Color="Color.Primary"
                            OnClick="@(() => OnPageChanged(pageNum))">
@@ -145,10 +167,34 @@
                             {
                                 <MudDivider Class="my-2" />
                                 <MudText Typo="Typo.body2">Duration: @track.Duration</MudText>
-                                <MudText Typo="Typo.body2" Class="mt-1">@track.Review</MudText>
+                                
+                                <div class="mt-2">
+                                    <MudText Typo="Typo.caption" Color="Color.Primary"><b>Lyrics:</b></MudText>
+                                    <div class="pa-2 mb-2" style="background: #fafafa; border-radius: 4px; font-family: monospace; font-size: 0.8rem;">
+                                        @if (CurrentLocale != null)
+                                        {
+                                            @foreach (var line in SongTextGenerator.GenerateLyrics(CurrentSeed, track.Index, CurrentLocale))
+                                            {
+                                                <div>🎤 @line</div>
+                                            }
+                                        }
+                                    </div>
+
+                                    <MudText Typo="Typo.caption" Color="Color.Primary"><b>Reviews:</b></MudText>
+                                    @if (CurrentLocale != null)
+                                    {
+                                        @foreach (var review in SongTextGenerator.GenerateReviews(CurrentSeed, track.Index, CurrentLocale, 2))
+                                        {
+                                            <div class="pa-1 mb-1" style="background: #f1f1f1; border-radius: 4px; font-style: italic; font-size: 0.75rem;">
+                                                "@review"
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
                                 <div class="mt-3" @onclick:stopPropagation="true">
                                     <midi-player src="@GetMusicUrl(track)" sound-font style="width: 100%;">
-                                    </midi-player>
+                                        </midi-player>
                                 </div>
                             }
                         </MudCardContent>
@@ -179,42 +225,21 @@
 
     private int? ExpandedTrackIndex { get; set; } = null;
 
-    // Оконная пагинация: всегда показываем ровно WindowSize номеров подряд,
-    // начиная с WindowStart. Стрелки сдвигают окно на 1, не прыгая в начало.
     private int WindowSize { get; set; } = 10;
     private int WindowStart { get; set; } = 1;
-
     private int GalleryPagesLoaded { get; set; } = 1;
 
     private DotNetObjectReference<Home>? _dotNetRef;
     private bool _scrollListenerActive = false;
 
-    private string GetMusicUrl(MusicTrack track)
-    {
-        return $"/music/{CurrentSeed}/{track.Index}";
-    }
+    private string GetMusicUrl(MusicTrack track) => $"/music/{CurrentSeed}/{track.Index}";
 
-    private void ShiftWindowRight()
-    {
-        WindowStart++; // окно сдвигается вправо: 1..10 -> 2..11
-    }
+    private void ShiftWindowRight() => WindowStart++;
+    private void ShiftWindowLeft() { if (WindowStart > 1) WindowStart--; }
 
-    private void ShiftWindowLeft()
-    {
-        if (WindowStart > 1)
-            WindowStart--; // окно сдвигается влево, но не дальше страницы 1
-    }
+    private void ToggleRow(MusicTrack track) => ExpandedTrackIndex = (ExpandedTrackIndex == track.Index) ? null : track.Index;
 
-    private void ToggleRow(MusicTrack track)
-    {
-        ExpandedTrackIndex = (ExpandedTrackIndex == track.Index) ? null : track.Index;
-    }
-
-    private void OnRowClicked(TableRowClickEventArgs<MusicTrack> args)
-    {
-        if (args.Item is not null)
-            ToggleRow(args.Item);
-    }
+    private void OnRowClicked(TableRowClickEventArgs<MusicTrack> args) { if (args.Item is not null) ToggleRow(args.Item); }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -335,6 +360,6 @@
     {
         string title = Uri.EscapeDataString(track.Title);
         string artist = Uri.EscapeDataString(track.Artist);
-        return $"/cover/{CurrentSeed}/{track.Index}?title={title}&artist={artist}";
+        return $"/cover/{CurrentSeed}/{track.Index}?title={title}&artist={artist}&lang={SelectedLocaleCode}";
     }
 }
