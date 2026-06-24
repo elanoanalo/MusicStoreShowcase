@@ -49,9 +49,15 @@
     {
         <MudTable Items="@CurrentTracks" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="1" Dense="true" T="MusicTrack">
             <HeaderContent>
+                <MudTh></MudTh>
                 <MudTh>#</MudTh><MudTh>Song</MudTh><MudTh>Artist</MudTh><MudTh>Album</MudTh><MudTh>Genre</MudTh><MudTh>Likes</MudTh>
             </HeaderContent>
             <RowTemplate>
+                <MudTd>
+                    <MudIconButton Icon="@(ExpandedTrackIndex == context.Index ? Icons.Material.Filled.KeyboardArrowUp : Icons.Material.Filled.KeyboardArrowDown)"
+                                   Size="Size.Small"
+                                   OnClick="@(() => ToggleRow(context))" />
+                </MudTd>
                 <MudTd DataLabel="#">@context.Index</MudTd>
                 <MudTd DataLabel="Song"><b>@context.Title</b></MudTd>
                 <MudTd DataLabel="Artist">@context.Artist</MudTd>
@@ -64,6 +70,27 @@
                     </div>
                 </MudTd>
             </RowTemplate>
+            <ChildRowContent>
+                @if (ExpandedTrackIndex == context.Index)
+                {
+                    <MudTr>
+                        <td colspan="7">
+                            <div class="d-flex pa-4" style="gap: 20px;">
+                                <img src="@GetCoverUrl(context)" width="200" height="200"
+                                     style="border-radius: 8px;" alt="cover" />
+                                <div>
+                                    <MudText Typo="Typo.h5">@context.Title</MudText>
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2">@context.Artist</MudText>
+                                    <MudText Typo="Typo.body2">Album: @context.Album</MudText>
+                                    <MudText Typo="Typo.body2">Genre: @context.Genre</MudText>
+                                    <MudText Typo="Typo.body2">Duration: @context.Duration</MudText>
+                                    <MudText Typo="Typo.body2" Class="mt-2">@context.Review</MudText>
+                                </div>
+                            </div>
+                        </td>
+                    </MudTr>
+                }
+            </ChildRowContent>
         </MudTable>
         <div class="d-flex justify-center mt-4 mb-6">
             <MudPagination Color="Color.Primary" Count="10" Selected="CurrentPage" SelectedChanged="OnPageChanged" />
@@ -101,13 +128,7 @@
 </MudContainer>
 
 @code {
-    // Список локалей подгружается из LocaleService один раз при инициализации
-    // компонента (а не хардкодится в разметке выше).
     private IReadOnlyList<LocaleDefinition> AvailableLocales { get; set; } = new List<LocaleDefinition>();
-
-    // Текущий выбранный язык хранится как код ("en", "es", ...), а не как
-    // числовой индекс — так список языков может расти без изменения
-    // структуры состояния.
     private string SelectedLocaleCode { get; set; } = string.Empty;
     private LocaleDefinition CurrentLocale => Locales.GetByCode(SelectedLocaleCode);
 
@@ -118,13 +139,18 @@
     private bool _isLoading = false;
     private List<MusicTrack> CurrentTracks { get; set; } = new();
 
-    // Сколько "страниц" (батчей по 10) галереи уже подгружено.
-    // Это и есть состояние, которое нужно сохранять при перегенерации,
-    // чтобы избежать "мигания" (сброс на 10 -> повторная автодогрузка).
+    // Какой трек сейчас раскрыт в таблице (null = ни один).
+    private int? ExpandedTrackIndex { get; set; } = null;
+
     private int GalleryPagesLoaded { get; set; } = 1;
 
     private DotNetObjectReference<Home>? _dotNetRef;
     private bool _scrollListenerActive = false;
+
+    private void ToggleRow(MusicTrack track)
+    {
+        ExpandedTrackIndex = (ExpandedTrackIndex == track.Index) ? null : track.Index;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -139,9 +165,6 @@
     [JSInvokable]
     public async Task LoadMoreTracks()
     {
-        // Лимита по количеству треков больше нет (по ТЗ — без жёсткого
-        // ограничения), поэтому здесь остаётся только защита от
-        // параллельных вызовов одного и того же запроса на подгрузку.
         if (IsTableView || _isLoading) return;
 
         _isLoading = true;
@@ -166,11 +189,6 @@
         UpdateData();
     }
 
-    // Перегенерирует данные для ТЕКУЩЕГО режима отображения.
-    // Table View: одна страница из CurrentPage (10 треков).
-    // Gallery View: все треки с 1 по GalleryPagesLoaded батчей сразу,
-    // одним вызовом — это и убирает "мигание", потому что не происходит
-    // промежуточного рендера на 10 треках с последующей автодогрузкой.
     private void UpdateData()
     {
         if (IsTableView)
@@ -184,12 +202,11 @@
         StateHasChanged();
     }
 
-    // Сброс при смене seed/языка: Table View -> страница 1,
-    // Gallery View -> обратно к одной "странице" (10 треков) и скролл наверх.
     private async void ResetNavigation()
     {
         CurrentPage = 1;
         GalleryPagesLoaded = 1;
+        ExpandedTrackIndex = null;
         UpdateData();
 
         if (!IsTableView)
@@ -200,12 +217,6 @@
 
     private void OnLanguageChanged(string newCode) { SelectedLocaleCode = newCode; ResetNavigation(); }
     private void OnSeedChanged(ulong newSeed) { CurrentSeed = newSeed; ResetNavigation(); }
-
-    // Лайки — особый случай: по ТЗ изменение лайков НЕ должно сбрасывать
-    // позицию скролла или страницу пагинации, и не должно менять
-    // title/artist/album/genre. Поэтому здесь не вызываем ResetNavigation(),
-    // а просто перегенерируем те же по объёму данные (текущая страница
-    // таблицы или все уже подгруженные страницы галереи) с новым AvgLikes.
     private void OnLikesChanged(double newLikes) { AvgLikes = newLikes; UpdateData(); }
 
     private async void OnViewModeChanged(bool isTable)
@@ -223,8 +234,6 @@
         }
         else
         {
-            // При переключении в галерею начинаем с одной "страницы",
-            // чтобы не задавать сразу слишком много элементов на старте.
             GalleryPagesLoaded = 1;
             _scrollListenerActive = false;
             UpdateData();
@@ -232,6 +241,7 @@
     }
 
     private void OnPageChanged(int page) { CurrentPage = page; UpdateData(); }
+
     private void GenerateRandomSeed()
     {
         Random rand = new Random();
@@ -249,5 +259,12 @@
             catch { /* circuit may already be gone */ }
         }
         _dotNetRef?.Dispose();
+    }
+
+    private string GetCoverUrl(MusicTrack track)
+    {
+        string title = Uri.EscapeDataString(track.Title);
+        string artist = Uri.EscapeDataString(track.Artist);
+        return $"/cover/{CurrentSeed}/{track.Index}?title={title}&artist={artist}";
     }
 }
