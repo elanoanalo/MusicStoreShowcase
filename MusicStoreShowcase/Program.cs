@@ -33,4 +33,10 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+app.MapGet("/cover/{seed}/{index}", (ulong seed, int index, string title, string artist) =>
+{
+    byte[] png = MusicStoreShowcase.Models.CoverGenerator.GenerateCoverPng(seed, index, title ?? "", artist ?? "");
+    return Results.File(png, "image/png");
+});
+
 app.Run();
