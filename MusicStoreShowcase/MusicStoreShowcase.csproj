@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.5" />
+    <PackageReference Include="Melanchall.DryWetMidi" Version="8.0.3" />
     <PackageReference Include="MudBlazor" Version="9.0.0" />
     <PackageReference Include="SkiaSharp" Version="4.148.0" />
   </ItemGroup>

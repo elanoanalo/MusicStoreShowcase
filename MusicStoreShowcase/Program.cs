@@ -39,4 +39,10 @@ app.MapGet("/cover/{seed}/{index}", (ulong seed, int index, string title, string
     return Results.File(png, "image/png");
 });
 
+app.MapGet("/music/{seed}/{index}", (ulong seed, int index) =>
+{
+    byte[] midi = MusicStoreShowcase.Models.MusicGenerator.GenerateMidi(seed, index);
+    return Results.File(midi, "audio/midi");
+});
+
 app.Run();

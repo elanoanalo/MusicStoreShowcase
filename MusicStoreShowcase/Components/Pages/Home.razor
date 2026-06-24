@@ -47,16 +47,16 @@
     @* 2. DATA AREA *@
     @if (IsTableView)
     {
-        <MudTable Items="@CurrentTracks" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="1" Dense="true" T="MusicTrack">
+        <MudTable Items="@CurrentTracks" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="1" Dense="true" T="MusicTrack"
+                  OnRowClick="@OnRowClicked" RowStyle="cursor: pointer;">
             <HeaderContent>
                 <MudTh></MudTh>
                 <MudTh>#</MudTh><MudTh>Song</MudTh><MudTh>Artist</MudTh><MudTh>Album</MudTh><MudTh>Genre</MudTh><MudTh>Likes</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd>
-                    <MudIconButton Icon="@(ExpandedTrackIndex == context.Index ? Icons.Material.Filled.KeyboardArrowUp : Icons.Material.Filled.KeyboardArrowDown)"
-                                   Size="Size.Small"
-                                   OnClick="@(() => ToggleRow(context))" />
+                    <MudIcon Icon="@(ExpandedTrackIndex == context.Index ? Icons.Material.Filled.KeyboardArrowUp : Icons.Material.Filled.KeyboardArrowDown)"
+                             Size="Size.Small" />
                 </MudTd>
                 <MudTd DataLabel="#">@context.Index</MudTd>
                 <MudTd DataLabel="Song"><b>@context.Title</b></MudTd>
@@ -85,6 +85,12 @@
                                     <MudText Typo="Typo.body2">Genre: @context.Genre</MudText>
                                     <MudText Typo="Typo.body2">Duration: @context.Duration</MudText>
                                     <MudText Typo="Typo.body2" Class="mt-2">@context.Review</MudText>
+                                    <div class="mt-3">
+                                        <midi-player src="@GetMusicUrl(context)"
+                                                     sound-font
+                                                     style="width: 100%;">
+                                        </midi-player>
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -92,8 +98,24 @@
                 }
             </ChildRowContent>
         </MudTable>
-        <div class="d-flex justify-center mt-4 mb-6">
-            <MudPagination Color="Color.Primary" Count="10" Selected="CurrentPage" SelectedChanged="OnPageChanged" />
+
+        <div class="d-flex justify-center align-center mt-4 mb-6" style="gap: 4px;">
+            <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                           OnClick="ShiftWindowLeft"
+                           Disabled="@(WindowStart == 1)" />
+
+            @for (int p = WindowStart; p < WindowStart + WindowSize; p++)
+            {
+                int pageNum = p; // локальная копия для замыкания
+                <MudButton Variant="@(pageNum == CurrentPage ? Variant.Filled : Variant.Text)"
+                           Color="Color.Primary"
+                           OnClick="@(() => OnPageChanged(pageNum))">
+                    @pageNum
+                </MudButton>
+            }
+
+            <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                           OnClick="ShiftWindowRight" />
         </div>
     }
     else
@@ -102,17 +124,33 @@
             @foreach (var track in CurrentTracks)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Elevation="2" Class="mb-3">
+                    <MudCard Elevation="2" Class="mb-3" Style="cursor: pointer;" @onclick="@(() => ToggleRow(track))">
+                        @if (ExpandedTrackIndex == track.Index)
+                        {
+                            <img src="@GetCoverUrl(track)"
+                                 style="display: block; width: 100%; aspect-ratio: 1; object-fit: cover;" alt="cover" />
+                        }
                         <MudCardContent>
                             <MudText Typo="Typo.caption" Class="text-muted">#@track.Index</MudText>
                             <MudText Typo="Typo.h6">@track.Title</MudText>
                             <MudText Typo="Typo.body2" Class="mb-2">@track.Artist</MudText>
                             <MudText Typo="Typo.caption">Album: @track.Album</MudText>
-                            <MudText Typo="Typo.caption" Class="mb-2">Genre: @track.Genre</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block mb-2">Genre: @track.Genre</MudText>
                             <div class="d-flex align-center" style="gap: 4px;">
                                 <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Error" Size="Size.Small" />
                                 <span>@track.Likes</span>
                             </div>
+
+                            @if (ExpandedTrackIndex == track.Index)
+                            {
+                                <MudDivider Class="my-2" />
+                                <MudText Typo="Typo.body2">Duration: @track.Duration</MudText>
+                                <MudText Typo="Typo.body2" Class="mt-1">@track.Review</MudText>
+                                <div class="mt-3" @onclick:stopPropagation="true">
+                                    <midi-player src="@GetMusicUrl(track)" sound-font style="width: 100%;">
+                                    </midi-player>
+                                </div>
+                            }
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
@@ -139,17 +177,43 @@
     private bool _isLoading = false;
     private List<MusicTrack> CurrentTracks { get; set; } = new();
 
-    // Какой трек сейчас раскрыт в таблице (null = ни один).
     private int? ExpandedTrackIndex { get; set; } = null;
+
+    // Оконная пагинация: всегда показываем ровно WindowSize номеров подряд,
+    // начиная с WindowStart. Стрелки сдвигают окно на 1, не прыгая в начало.
+    private int WindowSize { get; set; } = 10;
+    private int WindowStart { get; set; } = 1;
 
     private int GalleryPagesLoaded { get; set; } = 1;
 
     private DotNetObjectReference<Home>? _dotNetRef;
     private bool _scrollListenerActive = false;
 
+    private string GetMusicUrl(MusicTrack track)
+    {
+        return $"/music/{CurrentSeed}/{track.Index}";
+    }
+
+    private void ShiftWindowRight()
+    {
+        WindowStart++; // окно сдвигается вправо: 1..10 -> 2..11
+    }
+
+    private void ShiftWindowLeft()
+    {
+        if (WindowStart > 1)
+            WindowStart--; // окно сдвигается влево, но не дальше страницы 1
+    }
+
     private void ToggleRow(MusicTrack track)
     {
         ExpandedTrackIndex = (ExpandedTrackIndex == track.Index) ? null : track.Index;
+    }
+
+    private void OnRowClicked(TableRowClickEventArgs<MusicTrack> args)
+    {
+        if (args.Item is not null)
+            ToggleRow(args.Item);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -205,6 +269,7 @@
     private async void ResetNavigation()
     {
         CurrentPage = 1;
+        WindowStart = 1;
         GalleryPagesLoaded = 1;
         ExpandedTrackIndex = null;
         UpdateData();
@@ -240,7 +305,12 @@
         }
     }
 
-    private void OnPageChanged(int page) { CurrentPage = page; UpdateData(); }
+    private void OnPageChanged(int page)
+    {
+        CurrentPage = page;
+        ExpandedTrackIndex = null;
+        UpdateData();
+    }
 
     private void GenerateRandomSeed()
     {
